@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
-import type { Request as ExpressRequest, Response as ExpressResponse } from "express";
+import type { Request, Response } from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -35,12 +35,12 @@ if (process.env.NODE_ENV === "production") {
 }
 
 // Endpoint to validate if a company is in the food industry
-app.get("/api/health", (_req: ExpressRequest, res: ExpressResponse) => {
+app.get("/api/health", (_req: Request, res: Response) => {
   res.json({
     status: "ok",
   });
 });
-app.post("/api/chat", async (req: ExpressRequest, res: ExpressResponse) => {
+app.post("/api/chat", async (req: Request, res: Response) => {
   // Accepts: { history: [...], query: string, stream?: boolean }
   const { history = [], query = "", stream = false } = req.body;
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY } as any);
@@ -102,7 +102,7 @@ Eres un asistente útil que proporciona información sobre una compañía de seg
 `;
 
 // New endpoint for agentic LLM calls with streaming
-app.post("/api/llm", async (req: ExpressRequest, res: ExpressResponse) => {
+app.post("/api/llm", async (req: Request, res: Response) => {
   const { messages = [] } = req.body;
   
   const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY } as any);
@@ -169,7 +169,7 @@ app.post("/api/llm", async (req: ExpressRequest, res: ExpressResponse) => {
 
 // Catch-all route to serve index.html for SPA routing (production only)
 if (process.env.NODE_ENV === "production") {
-  app.get("*", (_req: ExpressRequest, res: ExpressResponse) => {
+  app.get("*", (_req: Request, res: Response) => {
     const distPath = path.join(__dirname, "..", "dist", "index.html");
     res.sendFile(distPath);
   });
