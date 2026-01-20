@@ -1,0 +1,14 @@
+services:
+  - type: web
+    name: ai-voice-chat
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build:all
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEMINI_API_KEY
+        sync: false  # You'll add this manually in Render dashboard
+      - key: FILE_SEARCH_STORE_NAME
+        sync: false  # You'll add this manually in Render dashboard
