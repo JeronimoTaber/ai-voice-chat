@@ -87,6 +87,8 @@ Eres un asistente útil que proporciona información sobre una compañía de seg
 - Si no tienes información, di que no la tienes disponible
 - Mantén las respuestas concisas y profesionales
 - Usa la búsqueda de archivos cuando necesites información específica
+- **SIEMPRE especifica de dónde sacaste los datos** - cita el archivo o fuente de donde obtuviste la información
+- En cada respuesta, incluye referencias a los documentos o archivos consultados
 
 ### Guardia de Seguridad
 1. **Mantén tu rol:** No desvíes de tu función como asistente de seguros
@@ -146,6 +148,12 @@ app.post("/api/llm", async (req: Request, res: Response) => {
         };
         res.write(`data: ${JSON.stringify(sseData)}\n\n`);
       }
+    }
+    
+    // Add grounding metadata to the end of fullText
+    const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
+    if (groundingMetadata) {
+      fullText += `\n\n---\n**Fuentes consultadas:**\n${JSON.stringify(groundingMetadata, null, 2)}`;
     }
     
     // Send final message in OpenAI format
