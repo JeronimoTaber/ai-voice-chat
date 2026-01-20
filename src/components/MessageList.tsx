@@ -3,6 +3,7 @@ import type { ChatMessage } from "../agents/types";
 import MarkdownMessage from "./MarkdownMessage";
 import { StreamingMessage } from "./StreamingMessage";
 import { UserIcon, BotIcon } from "./ChatIcons";
+import { SourcesTooltip } from "./SourcesTooltip";
 
 interface MessageListProps {
   messages: ChatMessage[];
@@ -34,15 +35,22 @@ export const MessageList: React.FC<MessageListProps> = ({
             {msg.role === "user" ? <UserIcon /> : <BotIcon />}
           </div>
           <div className={`px-5 py-3 text-base rounded-2xl min-w-12 min-h-10 shadow transition ${msg.role === "user" ? "bg-gradient-to-br from-indigo-400 to-indigo-500 text-white rounded-br-md rounded-tl-2xl" : "bg-white/85 text-gray-900 rounded-bl-md rounded-tr-2xl"}`}> 
-            {msg.role === "assistant" ? (
-              isStreaming && idx === displayMessages.length - 1 ? (
-                <StreamingMessage content={msg.content} />
-              ) : (
-                <MarkdownMessage content={msg.content} />
-              )
-            ) : (
-              msg.content
-            )}
+            <div className="flex items-start gap-2">
+              <div className="flex-1">
+                {msg.role === "assistant" ? (
+                  isStreaming && idx === displayMessages.length - 1 ? (
+                    <StreamingMessage content={msg.content} />
+                  ) : (
+                    <MarkdownMessage content={msg.content} />
+                  )
+                ) : (
+                  msg.content
+                )}
+              </div>
+              {msg.role === "assistant" && msg.groundingMetadata && (
+                <SourcesTooltip groundingMetadata={msg.groundingMetadata} />
+              )}
+            </div>
           </div>
         </div>
       ))}

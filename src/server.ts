@@ -164,6 +164,7 @@ app.post("/api/llm", async (req: Request, res: Response) => {
           content: fullText,
         },
         finish_reason: "stop",
+        groundingMetadata: groundingMetadata || {},
       }],
     };
     res.write(`data: ${JSON.stringify(finalData)}\n\n`);
@@ -171,6 +172,54 @@ app.post("/api/llm", async (req: Request, res: Response) => {
     res.end();
   } catch (error) {
     console.error("Error in /api/llm:", error);
+    res.status(500).json({ error: "LLM call failed" });
+  }
+});
+
+// Endpoint for agentic LLM calls without streaming
+app.post("/api/llm-complete", async (req: Request, res: Response) => {
+  const { messages = [] } = req.body;
+  
+  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY } as any);
+  
+  // Convert OpenAI-style messages to Gemini format (exclude system messages from client)
+  const contents = messages
+    .filter((msg: any) => msg.role !== "system")
+    .map((msg: any) => ({
+      role: msg.role === "assistant" ? "model" : "user",
+      parts: [{ text: msg.content }],
+    }));
+  
+  // Use server-side system prompt
+  const config: any = {
+    systemInstruction: [AGENT_SYSTEM_PROMPT],
+    tools: [{ fileSearch: { fileSearchStoreNames: [FILE_SEARCH_STORE_NAME] } }],
+  };
+  
+  try {
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents,
+      config,
+    });
+    
+    let fullText = response.text || "";
+    
+    // Add grounding metadata to the response (not in fullText)
+    const groundingMetadata = response.candidates?.[0]?.groundingMetadata;
+    
+    res.json({
+      choices: [{
+        message: {
+          role: "assistant",
+          content: fullText,
+        },
+        finish_reason: "stop",
+      }],
+      groundingMetadata: groundingMetadata || {},
+    });
+  } catch (error) {
+    console.error("Error in /api/llm-complete:", error);
     res.status(500).json({ error: "LLM call failed" });
   }
 });

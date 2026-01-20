@@ -1,19 +1,16 @@
 import SYSTEM_PROMPT from "../prompts/systemPrompt";
 import type { LLMCallOptions } from "../types";
-import { prepareMessages, parseLLMStream } from "../utils/llmStreamUtils";
+import { prepareMessages } from "../utils/llmStreamUtils";
 
-export async function callLLMStreaming({
+export async function callLLM({
   messages,
-  onChunk,
-}: LLMCallOptions & {
-  onChunk?: (chunk: string) => void;
-}): Promise<any> {
+}: LLMCallOptions): Promise<any> {
   const fullMessages = prepareMessages(messages, SYSTEM_PROMPT);
 
-  // Call the server endpoint instead of calling LLM directly
+  // Call the server endpoint for non-streaming LLM calls
   const serverUrl = import.meta.env.VITE_SERVER_URL || "http://localhost:3002";
   const response = await fetch(
-    `${serverUrl}/api/llm`,
+    `${serverUrl}/api/llm-complete`,
     {
       method: "POST",
       headers: {
@@ -31,22 +28,12 @@ export async function callLLMStreaming({
     );
   }
 
-  const reader = response.body?.getReader();
-  if (!reader) {
-    throw new Error("No response body reader available");
+  const data = await response.json();
+
+  // Add groundingMetadata to the message if it exists
+  if (data.choices && data.choices[0] && data.groundingMetadata) {
+    data.choices[0].message.groundingMetadata = data.groundingMetadata;
   }
 
-  const responseMessage = await parseLLMStream(reader, onChunk);
-
-  return {
-    choices: [
-      {
-        message: responseMessage,
-      },
-    ],
-  };
-}
-
-export async function callLLM({ messages }: LLMCallOptions): Promise<any> {
-  return callLLMStreaming({ messages });
+  return data;
 }

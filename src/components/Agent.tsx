@@ -62,11 +62,14 @@ const Agent: React.FC = (): ReactElement => {
     setIsStreaming(true);
     setStreamingContent("");
     try {
-      const res = await agenticLoopStreaming(newMessages, (chunk: string) => {
-        setStreamingContent((prev) => prev + chunk);
-      });
+      const res = await agenticLoopStreaming(newMessages);
       const reply = res.content || "No response.";
-      setMessages([...newMessages, { role: "assistant", content: reply }]);
+      const assistantMessage: ChatMessage = { 
+        role: "assistant", 
+        content: reply,
+        groundingMetadata: res.groundingMetadata
+      };
+      setMessages([...newMessages, assistantMessage]);
       setIsStreaming(false);
       setStreamingContent("");
       if (

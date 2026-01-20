@@ -1,22 +1,19 @@
-import { callLLMStreaming } from "./llmApi";
+import { callLLM } from "./llmApi";
 import type { ChatMessage } from "../types";
 
 /**
- * Simplified agentic loop with streaming support.
- * Calls the LLM with streaming support. Tool calls (like fileSearch) are handled server-side by Gemini.
+ * Simplified agentic loop without streaming.
+ * Calls the LLM and waits for the complete response. Tool calls (like fileSearch) are handled server-side by Gemini.
  * @param messages - The conversation history so far.
- * @param onChunk - Optional callback for streaming LLM output.
  * @returns The final LLM message.
  */
 export async function agenticLoopStreaming(
-  messages: ChatMessage[],
-  onChunk?: (chunk: string) => void
+  messages: ChatMessage[]
 ): Promise<any> {
-  // Call the LLM with streaming and get the response
+  // Call the LLM and get the complete response
   // The server handles fileSearch tool calling with Gemini
-  const data = await callLLMStreaming({
+  const data = await callLLM({
     messages,
-    onChunk,
   });
   
   const responseMsg = data.choices[0].message;
