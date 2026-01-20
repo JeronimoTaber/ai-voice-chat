@@ -12,9 +12,7 @@
     "dev:all": "concurrently \"npm run server\" \"npm run dev:client\"",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "start": "node dist/server.js",
-    "build:server": "tsc src/server.ts --outDir dist --esModuleInterop --resolveJsonModule --skipLibCheck --module commonjs --target es2020",
-    "build:all": "npm run build && npm run build:server"
+    "start": "NODE_ENV=production tsx src/server.ts"
   },
   "dependencies": {
     "@google/genai": "^1.37.0",

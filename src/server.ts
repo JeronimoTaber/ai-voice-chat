@@ -34,7 +34,7 @@ if (process.env.NODE_ENV === "production") {
 }
 
 // Endpoint to validate if a company is in the food industry
-app.get("/api/health", (req: Request, res: Response) => {
+app.get("/api/health", (_req: Request, res: Response) => {
   res.json({
     status: "ok",
   });
@@ -168,7 +168,7 @@ app.post("/api/llm", async (req: Request, res: Response) => {
 
 // Catch-all route to serve index.html for SPA routing (production only)
 if (process.env.NODE_ENV === "production") {
-  app.get("*", (req: Request, res: Response) => {
+  app.get("*", (_req: Request, res: Response) => {
     const distPath = path.join(__dirname, "..", "dist", "index.html");
     res.sendFile(distPath);
   });
