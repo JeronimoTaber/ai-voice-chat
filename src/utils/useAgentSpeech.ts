@@ -3,7 +3,7 @@ import SpeechRecognition, { useSpeechRecognition } from "react-speech-recognitio
 
 export function useAgentSpeech({
   onSend,
-  listenningToogle,
+  listenningToogle: _listenningToogle,
   setlistenningToogle,
 }: {
   onSend: (content: string) => void;
