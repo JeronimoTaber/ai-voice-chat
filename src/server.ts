@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 import express from "express";
-import type { Request, Response } from "express";
+import type { Request as ExpressRequest, Response as ExpressResponse } from "express";
 import cors from "cors";
 import path from "path";
 import { fileURLToPath } from "url";
@@ -14,6 +14,7 @@ const __dirname = path.dirname(__filename);
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const FILE_SEARCH_STORE_NAME = process.env.FILE_SEARCH_STORE_NAME || "";
 const PORT = process.env.PORT || 3002;
+const port = typeof PORT === "string" ? parseInt(PORT, 10) : PORT;
 
 if (!GEMINI_API_KEY) {
   console.error("ERROR: GEMINI_API_KEY environment variable is not set.");
@@ -34,15 +35,15 @@ if (process.env.NODE_ENV === "production") {
 }
 
 // Endpoint to validate if a company is in the food industry
-app.get("/api/health", (_req: Request, res: Response) => {
+app.get("/api/health", (_req: ExpressRequest, res: ExpressResponse) => {
   res.json({
     status: "ok",
   });
 });
-app.post("/api/chat", async (req: Request, res: Response) => {
+app.post("/api/chat", async (req: ExpressRequest, res: ExpressResponse) => {
   // Accepts: { history: [...], query: string, stream?: boolean }
   const { history = [], query = "", stream = false } = req.body;
-  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY } as any);
   // Build contents: history + new user message
   const contents = [...history, { role: "user", parts: [{ text: query }] }];
   const config = {
@@ -101,10 +102,10 @@ Eres un asistente útil que proporciona información sobre una compañía de seg
 `;
 
 // New endpoint for agentic LLM calls with streaming
-app.post("/api/llm", async (req: Request, res: Response) => {
+app.post("/api/llm", async (req: ExpressRequest, res: ExpressResponse) => {
   const { messages = [] } = req.body;
   
-  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY });
+  const ai = new GoogleGenAI({ apiKey: GEMINI_API_KEY } as any);
   
   // Convert OpenAI-style messages to Gemini format (exclude system messages from client)
   const contents = messages
@@ -118,7 +119,7 @@ app.post("/api/llm", async (req: Request, res: Response) => {
   const config: any = {
     systemInstruction: [AGENT_SYSTEM_PROMPT],
     tools: [{ fileSearch: { fileSearchStoreNames: [FILE_SEARCH_STORE_NAME] } }],
-  }
+  };
   
   try {
     const response = await ai.models.generateContentStream({
@@ -168,14 +169,14 @@ app.post("/api/llm", async (req: Request, res: Response) => {
 
 // Catch-all route to serve index.html for SPA routing (production only)
 if (process.env.NODE_ENV === "production") {
-  app.get("*", (_req: Request, res: Response) => {
+  app.get("*", (_req: ExpressRequest, res: ExpressResponse) => {
     const distPath = path.join(__dirname, "..", "dist", "index.html");
     res.sendFile(distPath);
   });
 }
 
-app.listen(PORT, () => {
-  console.log(`API running on port ${PORT}`);
+app.listen(port, () => {
+  console.log(`API running on port ${port}`);
 });
 
 export default app;
